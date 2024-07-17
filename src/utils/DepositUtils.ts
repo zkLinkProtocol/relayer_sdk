@@ -50,19 +50,19 @@ export async function queryHistoricalDepositForFill(
     throw new Error("SpokePoolClient must be updated before querying historical deposits");
   }
 
-  const { depositId } = fill;
+  const { nonce } = fill;
   let { firstDepositIdForSpokePool: lowId, lastDepositIdForSpokePool: highId } = spokePoolClient;
-  if (depositId < lowId || depositId > highId) {
+  if (nonce < lowId || nonce > highId) {
     return {
       found: false,
       code: InvalidFill.DepositIdInvalid,
-      reason: `Deposit ID ${depositId} is outside of SpokePool bounds [${lowId},${highId}].`,
+      reason: `Deposit ID ${nonce} is outside of SpokePool bounds [${lowId},${highId}].`,
     };
   }
 
   ({ earliestDepositIdQueried: lowId, latestDepositIdQueried: highId } = spokePoolClient);
-  if (depositId >= lowId && depositId <= highId) {
-    const deposit = spokePoolClient.getDeposit(depositId);
+  if (nonce >= lowId && nonce <= highId) {
+    const deposit = spokePoolClient.getDeposit(nonce);
     if (isDefined(deposit) && validateFillForDeposit(fill, deposit)) {
       return { found: true, deposit };
     }
@@ -70,7 +70,7 @@ export async function queryHistoricalDepositForFill(
     return {
       found: false,
       code: isDefined(deposit) ? InvalidFill.FillMismatch : InvalidFill.DepositIdNotFound,
-      reason: `Deposit ID ${depositId} not found in SpokePoolClient event buffer.`,
+      reason: `Deposit ID ${nonce} not found in SpokePoolClient event buffer.`,
     };
   }
 
@@ -97,7 +97,7 @@ export async function queryHistoricalDepositForFill(
   if (isDefined(cachedDeposit)) {
     deposit = cachedDeposit as DepositWithBlock;
   } else {
-    deposit = await spokePoolClient.findDeposit(fill.depositId, fill.destinationChainId, fill.depositor);
+    deposit = await spokePoolClient.findDeposit(fill.nonce, fill.destinationChainId, fill.depositor);
     if (cache) {
       await setDepositInCache(deposit, getCurrentTime(), cache, DEFAULT_CACHING_TTL);
     }
@@ -110,7 +110,7 @@ export async function queryHistoricalDepositForFill(
   return {
     found: false,
     code: InvalidFill.FillMismatch,
-    reason: `Fill is not valid for ${getNetworkName(deposit.originChainId)} deposit ${depositId}`,
+    reason: `Fill is not valid for ${getNetworkName(deposit.originChainId)} deposit ${nonce}`,
   };
 }
 

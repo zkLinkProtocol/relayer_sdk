@@ -31,7 +31,7 @@ export function populateV3Relay(
     inputAmount: deposit.inputAmount,
     outputAmount: deposit.outputAmount,
     originChainId: deposit.originChainId,
-    depositId: deposit.depositId,
+    nonce: deposit.nonce,
     fillDeadline: deposit.fillDeadline,
     exclusivityDeadline: deposit.exclusivityDeadline,
     message: deposit.message,
@@ -263,8 +263,8 @@ export async function relayFillStatus(
   const fillStatus = Number(_fillStatus);
 
   if (![FillStatus.Unfilled, FillStatus.RequestedSlowFill, FillStatus.Filled].includes(fillStatus)) {
-    const { originChainId, depositId } = relayData;
-    throw new Error(`relayFillStatus: Unexpected fillStatus for ${originChainId} deposit ${depositId} (${fillStatus})`);
+    const { originChainId, nonce } = relayData;
+    throw new Error(`relayFillStatus: Unexpected fillStatus for ${originChainId} deposit ${nonce} (${fillStatus})`);
   }
 
   return fillStatus;
@@ -351,9 +351,9 @@ export async function findFillBlock(
 
   // Was filled earlier than the specified lowBlock. This is an error by the caller.
   if (initialFillStatus === FillStatus.Filled) {
-    const { depositId, originChainId } = relayData;
+    const { nonce, originChainId } = relayData;
     const [srcChain, dstChain] = [getNetworkName(originChainId), getNetworkName(destinationChainId)];
-    throw new Error(`${srcChain} deposit ${depositId} filled on ${dstChain} before block ${lowBlockNumber}`);
+    throw new Error(`${srcChain} deposit ${nonce} filled on ${dstChain} before block ${lowBlockNumber}`);
   }
 
   // Find the leftmost block where filledAmount equals the deposit amount.

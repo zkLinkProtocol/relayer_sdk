@@ -155,10 +155,10 @@ export class MockSpokePoolClient extends SpokePoolClient {
     const event = "V3FundsDeposited";
 
     const { blockNumber, transactionIndex } = deposit;
-    let { depositId, depositor, destinationChainId, inputToken, inputAmount, outputToken, outputAmount } = deposit;
-    depositId ??= this.numberOfDeposits;
-    assert(depositId >= this.numberOfDeposits, `${depositId} < ${this.numberOfDeposits}`);
-    this.numberOfDeposits = depositId + 1;
+    let { nonce, depositor, destinationChainId, inputToken, inputAmount, outputToken, outputAmount } = deposit;
+    nonce ??= this.numberOfDeposits;
+    assert(nonce >= this.numberOfDeposits, `${nonce} < ${this.numberOfDeposits}`);
+    this.numberOfDeposits = nonce + 1;
 
     destinationChainId ??= random(1, 42161, false);
     depositor ??= randomAddress();
@@ -168,10 +168,10 @@ export class MockSpokePoolClient extends SpokePoolClient {
     outputAmount ??= inputAmount.mul(toBN("0.95"));
 
     const message = deposit["message"] ?? `${event} event at block ${blockNumber}, index ${transactionIndex}.`;
-    const topics = [destinationChainId, depositId, depositor];
+    const topics = [destinationChainId, nonce, depositor];
     const quoteTimestamp = deposit.quoteTimestamp ?? getCurrentTime();
     const args = {
-      depositId,
+      nonce,
       originChainId: deposit.originChainId ?? this.chainId,
       destinationChainId,
       depositor,
@@ -201,16 +201,16 @@ export class MockSpokePoolClient extends SpokePoolClient {
     const event = "FilledV3Relay";
 
     const { blockNumber, transactionIndex } = fill;
-    let { originChainId, depositId, inputToken, inputAmount, outputAmount, fillDeadline, relayer } = fill;
+    let { originChainId, nonce, inputToken, inputAmount, outputAmount, fillDeadline, relayer } = fill;
     originChainId ??= random(1, 42161, false);
-    depositId ??= random(1, 100_000, false);
+    nonce ??= random(1, 100_000, false);
     inputToken ??= randomAddress();
     inputAmount ??= toBNWei(random(1, 1000, false));
     outputAmount ??= inputAmount;
     fillDeadline ??= getCurrentTime() + 60;
     relayer ??= randomAddress();
 
-    const topics = [originChainId, depositId, relayer];
+    const topics = [originChainId, nonce, relayer];
     const recipient = fill.recipient ?? randomAddress();
     const message = fill["message"] ?? `${event} event at block ${blockNumber}, index ${transactionIndex}.`;
 
@@ -221,7 +221,7 @@ export class MockSpokePoolClient extends SpokePoolClient {
       outputAmount: fill.outputAmount,
       repaymentChainId: fill.repaymentChainId ?? this.chainId,
       originChainId,
-      depositId,
+      nonce,
       fillDeadline,
       exclusivityDeadline: fill.exclusivityDeadline ?? fillDeadline,
       exclusiveRelayer: fill.exclusiveRelayer ?? ZERO_ADDRESS,
@@ -249,7 +249,7 @@ export class MockSpokePoolClient extends SpokePoolClient {
 
   speedUpV3Deposit(speedUp: SpeedUp): Event {
     const event = "RequestedSpeedUpV3Deposit";
-    const topics = [speedUp.depositId, speedUp.depositor];
+    const topics = [speedUp.nonce, speedUp.depositor];
     const args = { ...speedUp };
 
     return this.eventManager.generateEvent({
@@ -263,8 +263,8 @@ export class MockSpokePoolClient extends SpokePoolClient {
   requestV3SlowFill(request: SlowFillRequestWithBlock): Event {
     const event = "RequestedV3SlowFill";
 
-    const { originChainId, depositId } = request;
-    const topics = [originChainId, depositId];
+    const { originChainId, nonce } = request;
+    const topics = [originChainId, nonce];
     const args = { ...request };
 
     return this.eventManager.generateEvent({

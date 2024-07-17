@@ -232,8 +232,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @returns A new deposit instance with the speed up signature appended to the deposit.
    */
   public appendMaxSpeedUpSignatureToDeposit(deposit: DepositWithBlock): DepositWithBlock {
-    const { depositId, depositor } = deposit;
-    const speedups = this.speedUps[depositor]?.[depositId];
+    const { nonce, depositor } = deposit;
+    const speedups = this.speedUps[depositor]?.[nonce];
     if (!isDefined(speedups) || speedups.length === 0) {
       return deposit;
     }
@@ -263,11 +263,11 @@ export class SpokePoolClient extends BaseAbstractClient {
   /**
    * Find a deposit based on its deposit ID.
    * @notice If evaluating a fill, be sure to verify it against the resulting deposit.
-   * @param depositId The unique ID of the deposit being queried.
+   * @param nonce The unique ID of the deposit being queried.
    * @returns The corresponding deposit if found, undefined otherwise.
    */
-  public getDeposit(depositId: number): DepositWithBlock | undefined {
-    const depositHash = this.getDepositHash({ depositId, originChainId: this.chainId });
+  public getDeposit(nonce: number): DepositWithBlock | undefined {
+    const depositHash = this.getDepositHash({ nonce, originChainId: this.chainId });
     return this.depositHashes[depositHash];
   }
 
@@ -334,7 +334,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     );
 
     // Log any invalid deposits with same deposit id but different params.
-    const invalidFillsForDeposit = invalidFills.filter((x) => x.depositId === deposit.depositId);
+    const invalidFillsForDeposit = invalidFills.filter((x) => x.nonce === deposit.nonce);
     if (invalidFillsForDeposit.length > 0) {
       this.logger.warn({
         at: "SpokePoolClient",
@@ -365,8 +365,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @note This hash is used to match deposits and fills together.
    * @note This hash takes the form of: `${depositId}-${originChainId}`.
    */
-  public getDepositHash(event: { depositId: number; originChainId: number }): string {
-    return `${event.depositId}-${event.originChainId}`;
+  public getDepositHash(event: { nonce: number; originChainId: number }): string {
+    return `${event.nonce}-${event.originChainId}`;
   }
 
   /**
@@ -557,11 +557,11 @@ export class SpokePoolClient extends BaseAbstractClient {
         }
         assign(this.depositHashes, [this.getDepositHash(deposit)], deposit);
 
-        if (deposit.depositId < this.earliestDepositIdQueried) {
-          this.earliestDepositIdQueried = deposit.depositId;
+        if (deposit.nonce < this.earliestDepositIdQueried) {
+          this.earliestDepositIdQueried = deposit.nonce;
         }
-        if (deposit.depositId > this.latestDepositIdQueried) {
-          this.latestDepositIdQueried = deposit.depositId;
+        if (deposit.nonce > this.latestDepositIdQueried) {
+          this.latestDepositIdQueried = deposit.nonce;
         }
       }
     }
@@ -575,7 +575,7 @@ export class SpokePoolClient extends BaseAbstractClient {
 
       for (const event of speedUpEvents) {
         const speedUp: SpeedUp = { ...spreadEvent(event.args), originChainId: this.chainId };
-        assign(this.speedUps, [speedUp.depositor, speedUp.depositId], [speedUp]);
+        assign(this.speedUps, [speedUp.depositor, speedUp.nonce], [speedUp]);
 
         // Find deposit hash matching this speed up event and update the deposit data associated with the hash,
         // if the hash+data exists.
