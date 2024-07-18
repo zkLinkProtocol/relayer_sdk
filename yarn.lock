@@ -30,26 +30,6 @@
     "@openzeppelin/contracts" "4.1.0"
     "@uma/core" "^2.18.0"
 
-"@across-protocol/contracts@^3.0.5":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@across-protocol/contracts/-/contracts-3.0.5.tgz#6c10e464d676ced05fd79455aac5ecf2bf6243d8"
-  integrity sha512-SOMyka9okiAq74i3KavowcD3jYh8fetsO/wHEkaH/0Gs0arXz4pcRDgTK97IsnBygbTkPPjwc+mPCPbLcnRJlQ==
-  dependencies:
-    "@across-protocol/constants" "^3.1.5"
-    "@defi-wonderland/smock" "^2.3.4"
-    "@eth-optimism/contracts" "^0.5.40"
-    "@ethersproject/abstract-provider" "5.7.0"
-    "@ethersproject/abstract-signer" "5.7.0"
-    "@ethersproject/bignumber" "5.7.0"
-    "@openzeppelin/contracts" "4.9.6"
-    "@openzeppelin/contracts-upgradeable" "4.9.6"
-    "@scroll-tech/contracts" "^0.1.0"
-    "@uma/common" "^2.34.0"
-    "@uma/contracts-node" "^0.4.17"
-    "@uma/core" "^2.56.0"
-    axios "^1.6.2"
-    zksync-web3 "^0.14.3"
-
 "@apollo/protobufjs@1.2.6":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@apollo/protobufjs/-/protobufjs-1.2.6.tgz#d601e65211e06ae1432bf5993a1a0105f2862f27"
@@ -436,7 +416,7 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@defi-wonderland/smock@^2.3.4", "@defi-wonderland/smock@^2.3.5":
+"@defi-wonderland/smock@^2.3.5":
   version "2.3.5"
   resolved "https://registry.yarnpkg.com/@defi-wonderland/smock/-/smock-2.3.5.tgz#2f4daa10b4f4c69627200128778f61c51f4b32cc"
   integrity sha512-klANj1hUpc3cd2ShXdVH/bEGwxJd+LxOngkF5gLcIbg6b37RCgMPMmR/94/hgL62F8bfWtuNKsQD7K+c6M5fWQ==
@@ -534,7 +514,7 @@
     "@ethersproject/abstract-provider" "^5.7.0"
     "@ethersproject/abstract-signer" "^5.7.0"
 
-"@eth-optimism/contracts@^0.5.37", "@eth-optimism/contracts@^0.5.40", "@eth-optimism/contracts@^0.5.5":
+"@eth-optimism/contracts@^0.5.37", "@eth-optimism/contracts@^0.5.5":
   version "0.5.40"
   resolved "https://registry.yarnpkg.com/@eth-optimism/contracts/-/contracts-0.5.40.tgz#d13a04a15ea947a69055e6fc74d87e215d4c936a"
   integrity sha512-MrzV0nvsymfO/fursTB7m/KunkPsCndltVgfdHaT1Aj5Vi6R/doKIGGkOofHX+8B6VMZpuZosKCMQ5lQuqjt8w==
@@ -1940,11 +1920,6 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@openzeppelin/contracts-upgradeable@4.9.6":
-  version "4.9.6"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.6.tgz#38b21708a719da647de4bb0e4802ee235a0d24df"
-  integrity sha512-m4iHazOsOCv1DgM7eD7GupTJ+NFVujRZt1wzddDPSVGpWdKq1SKkla5htKG7+IS4d2XOCtzkUNwRZ7Vq5aEUMA==
-
 "@openzeppelin/contracts-upgradeable@^4.8.1":
   version "4.9.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.3.tgz#ff17a80fb945f5102571f8efecb5ce5915cc4811"
@@ -1964,11 +1939,6 @@
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.4.2.tgz#4e889c9c66e736f7de189a53f8ba5b8d789425c2"
   integrity sha512-NyJV7sJgoGYqbtNUWgzzOGW4T6rR19FmX1IJgXGdapGPWsuMelGJn9h03nos0iqfforCbCB0iYIR0MtIuIFLLw==
-
-"@openzeppelin/contracts@4.9.6":
-  version "4.9.6"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.6.tgz#2a880a24eb19b4f8b25adc2a5095f2aa27f39677"
-  integrity sha512-xSmezSupL+y9VkHZJGDoCBpmnB2ogM13ccaYDWqJTfS3dbuHkgjuwDFUmaFauBCboQMGB/S5UqUl2y54X99BmA==
 
 "@openzeppelin/contracts@^4.2.0", "@openzeppelin/contracts@^4.7.3", "@openzeppelin/contracts@^4.8.1":
   version "4.9.3"
@@ -2146,11 +2116,6 @@
     hosted-git-info "^2.6.0"
     path-browserify "^1.0.0"
     url "^0.11.0"
-
-"@scroll-tech/contracts@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@scroll-tech/contracts/-/contracts-0.1.0.tgz#ccea8db1b3df7d740e4b7843ac01b5bd25b4438b"
-  integrity sha512-aBbDOc3WB/WveZdpJYcrfvMYMz7ZTEiW8M9XMJLba8p9FAR5KGYB/cV+8+EUsq3MKt7C1BfR+WnXoTVdvwIY6w==
 
 "@scure/base@~1.1.0":
   version "1.1.1"
@@ -3300,12 +3265,12 @@
   resolved "https://registry.yarnpkg.com/@uma/contracts-frontend/-/contracts-frontend-0.4.16.tgz#47f90874800a64e046143eefee9614fcafa8ca5b"
   integrity sha512-2/0A7wTh2zEw8GjYZmydRmTtQDfUtRHrttU2E5w8dACDIMA5EYrAm+G/r67SYcrt7+cWUmsBmR9AZ0QR01zN2A==
 
-"@uma/contracts-node@^0.4.0", "@uma/contracts-node@^0.4.16", "@uma/contracts-node@^0.4.17":
+"@uma/contracts-node@^0.4.0", "@uma/contracts-node@^0.4.16":
   version "0.4.17"
   resolved "https://registry.yarnpkg.com/@uma/contracts-node/-/contracts-node-0.4.17.tgz#6abd815723c8344017eb5c302f6a5b0b690eeb4e"
   integrity sha512-e7cVJr3yhKrPZn1TAo/CCOt+QacJON6Mj71lcwHq/rnx+tgjujK2MsOhihytmb79ejPTKg1b5+2GIDL02ttrrQ==
 
-"@uma/core@^2.18.0", "@uma/core@^2.56.0":
+"@uma/core@^2.18.0":
   version "2.56.0"
   resolved "https://registry.yarnpkg.com/@uma/core/-/core-2.56.0.tgz#c19aa427f08691a85e99ec523d23abf359a6b0c3"
   integrity sha512-unylWwHeD/1mYcj1t2UPVgj1V+ceBLSo/BcYKgZyyBIHYAkC6bOx4egV/2NrhWPt3sX5CZFG1I1kMAqgp245tQ==
@@ -4185,15 +4150,6 @@ axios@^1.4.0:
   integrity sha512-D4DdjDo5CY50Qms0qGQTTw6Q44jl7zRwY7bthds06pUGfChBCTcQs+N743eFWGEd6pRTMd6A+I87aWyFV5wiZQ==
   dependencies:
     follow-redirects "^1.15.0"
-    form-data "^4.0.0"
-    proxy-from-env "^1.1.0"
-
-axios@^1.6.2:
-  version "1.6.7"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.7.tgz#7b48c2e27c96f9c68a2f8f31e2ab19f59b06b0a7"
-  integrity sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==
-  dependencies:
-    follow-redirects "^1.15.4"
     form-data "^4.0.0"
     proxy-from-env "^1.1.0"
 
@@ -7555,11 +7511,6 @@ follow-redirects@^1.12.1, follow-redirects@^1.14.0, follow-redirects@^1.14.4, fo
   version "1.15.3"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.3.tgz#fe2f3ef2690afce7e82ed0b44db08165b207123a"
   integrity sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q==
-
-follow-redirects@^1.15.4:
-  version "1.15.5"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.5.tgz#54d4d6d062c0fa7d9d17feb008461550e3ba8020"
-  integrity sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==
 
 for-each@^0.3.3:
   version "0.3.3"
@@ -15683,8 +15634,3 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
-
-zksync-web3@^0.14.3:
-  version "0.14.3"
-  resolved "https://registry.yarnpkg.com/zksync-web3/-/zksync-web3-0.14.3.tgz#64ac2a16d597464c3fc4ae07447a8007631c57c9"
-  integrity sha512-hT72th4AnqyLW1d5Jlv8N2B/qhEnl2NePK2A3org7tAa24niem/UAaHMkEvmWI3SF9waYUPtqAtjpf+yvQ9zvQ==

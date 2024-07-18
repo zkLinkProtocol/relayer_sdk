@@ -70,7 +70,8 @@ export function populateV3Relay(
  *        // where the deposit with deposit ID = targetDepositId was created.
  */
 export async function getBlockRangeForDepositId(
-  targetDepositId: number,
+  depositor: string,
+  targetNonce: number,
   initLow: number,
   initHigh: number,
   maxSearches: number,
@@ -116,7 +117,7 @@ export async function getBlockRangeForDepositId(
   // make an eth_call request to get the deposit ID at the block number. It will then cache the deposit ID
   // in the queriedIds cache.
   const _getDepositIdAtBlock = async (blockNumber: number): Promise<number> => {
-    queriedIds[blockNumber] ??= await spokePool._getDepositIdAtBlock(blockNumber);
+    queriedIds[blockNumber] ??= await spokePool._getDepositIdAtBlock(depositor, blockNumber);
     return queriedIds[blockNumber];
   };
 
@@ -128,26 +129,26 @@ export async function getBlockRangeForDepositId(
 
   // If the deposit ID at the initial high block is less than the target deposit ID, then we know that
   // the target deposit ID must be greater than the initial high block, so we can throw an error.
-  if (highestDepositIdInRange <= targetDepositId) {
+  if (highestDepositIdInRange <= targetNonce) {
     // initLow   = 5: Deposits Num: 10
     //                                     // targetId = 11  <- fail (triggers this error)          // 10 <= 11
     //                                     // targetId = 10  <- fail (triggers this error)          // 10 <= 10
     //                                     // targetId = 09  <- pass (does not trigger this error)  // 10 <= 09
     throw new Error(
-      `Target depositId is greater than the initial high block (${targetDepositId} > ${highestDepositIdInRange})`
+      `Target nonce is greater than the initial high block (${targetNonce} > ${highestDepositIdInRange})`
     );
   }
 
   // If the deposit ID at the initial low block is greater than the target deposit ID, then we know that
   // the target deposit ID must be less than the initial low block, so we can throw an error.
-  if (lowestDepositIdInRange > targetDepositId) {
+  if (lowestDepositIdInRange > targetNonce) {
     // initLow   = 5: Deposits Num: 10
     // initLow-1 = 4: Deposits Num:  2
     //                                     // targetId = 1 <- fail (triggers this error)
     //                                     // targetId = 2 <- pass (does not trigger this error)
     //                                     // targetId = 3 <- pass (does not trigger this error)
     throw new Error(
-      `Target depositId is less than the initial low block (${targetDepositId} > ${lowestDepositIdInRange})`
+      `Target nonce is less than the initial low block (${targetNonce} > ${lowestDepositIdInRange})`
     );
   }
 
@@ -171,7 +172,7 @@ export async function getBlockRangeForDepositId(
     // If our target deposit ID is less than the smallest range of our
     // midpoint deposit ID range, then we know that the target deposit ID
     // must be in the lower half of the block range.
-    if (targetDepositId <= accountedIdByMidBlock) {
+    if (targetNonce <= accountedIdByMidBlock) {
       high = mid;
     }
     // If our target deposit ID is greater than the largest range of our
@@ -195,13 +196,13 @@ export async function getBlockRangeForDepositId(
   return { low, high };
 }
 
-/**
- * Finds the deposit id at a specific block number.
- * @param blockTag The block number to search for the deposit ID at.
- * @returns The deposit ID.
- */
-export async function getDepositIdAtBlock(contract: Contract, blockTag: number): Promise<number> {
-  const depositIdAtBlock = await contract.numberOfDeposits({ blockTag });
+// /**
+//  * Finds the deposit id at a specific block number.
+//  * @param blockTag The block number to search for the deposit ID at.
+//  * @returns The deposit ID.
+//  */
+export async function getDepositIdAtBlock(depositor: string, contract: Contract, blockTag: number): Promise<number> {
+  const depositIdAtBlock = await contract.nonce(depositor, { blockTag });
   // Sanity check to ensure that the deposit ID is an integer and is greater than or equal to zero.
   if (!Number.isInteger(depositIdAtBlock) || depositIdAtBlock < 0) {
     throw new Error("Invalid deposit count");

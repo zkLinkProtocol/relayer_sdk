@@ -103,7 +103,7 @@ export class MockSpokePoolClient extends SpokePoolClient {
       lastDepositId = _depositIds[i];
     }
   }
-  _getDepositIdAtBlock(blockTag: number): Promise<number> {
+  _getDepositIdAtBlock(_: string, blockTag: number): Promise<number> {
     return Promise.resolve(this.depositIdAtBlock[blockTag]);
   }
 

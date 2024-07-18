@@ -1,5 +1,5 @@
 import { CHAIN_IDs, TOKEN_SYMBOLS_MAP } from "@across-protocol/constants";
-import { getDeployedAddress } from "@across-protocol/contracts";
+import { getDeployedAddress } from "../../utils";
 import { asL2Provider } from "@eth-optimism/sdk";
 import { providers } from "ethers";
 import { DEFAULT_SIMULATED_RELAYER_ADDRESS } from "../../constants";

@@ -13,3 +13,5 @@ export * as typeguards from "./typeguards";
 export * as clients from "./clients";
 export * as typechain from "./typechain";
 export * as caching from "./caching";
+export * as sdk_contracts from "./sdk_contracts";
+

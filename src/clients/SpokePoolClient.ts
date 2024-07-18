@@ -385,7 +385,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    *        // where the deposit with deposit ID = targetDepositId was created.
    */
   public _getBlockRangeForDepositId(
-    targetDepositId: number,
+    depositor: string,
+    targetNonce: number,
     initLow: number,
     initHigh: number,
     maxSearches: number
@@ -393,7 +394,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     low: number;
     high: number;
   }> {
-    return getBlockRangeForDepositId(targetDepositId, initLow, initHigh, maxSearches, this);
+    return getBlockRangeForDepositId(depositor, targetNonce, initLow, initHigh, maxSearches, this);
   }
 
   /**
@@ -401,8 +402,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @param blockTag The block number to search for the deposit ID at.
    * @returns The deposit ID.
    */
-  public _getDepositIdAtBlock(blockTag: number): Promise<number> {
-    return getDepositIdAtBlock(this.spokePool as SpokePool, blockTag);
+  public _getDepositIdAtBlock(depositor: string, blockTag: number): Promise<number> {
+    return getDepositIdAtBlock(depositor, this.spokePool as SpokePool, blockTag);
   }
 
   /**
@@ -780,7 +781,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     return this.oldestTime;
   }
 
-  async findDeposit(depositId: number, destinationChainId: number, depositor: string): Promise<DepositWithBlock> {
+  async findDeposit(nonce: number, destinationChainId: number, depositor: string): Promise<DepositWithBlock> {
     // Binary search for event search bounds. This way we can get the blocks before and after the deposit with
     // deposit ID = fill.depositId and use those blocks to optimize the search for that deposit.
     // Stop searches after a maximum # of searches to limit number of eth_call requests. Make an
@@ -790,7 +791,8 @@ export class SpokePoolClient extends BaseAbstractClient {
     // @dev Limiting between 5-10 searches empirically performs best when there are ~300,000 deposits
     // for a spoke pool and we're looking for a deposit <5 days older than HEAD.
     const searchBounds = await this._getBlockRangeForDepositId(
-      depositId,
+      depositor,
+      nonce,
       this.deploymentBlock,
       this.latestBlockSearched,
       7
@@ -800,12 +802,12 @@ export class SpokePoolClient extends BaseAbstractClient {
     const query = await paginatedEventQuery(
       this.spokePool,
       this.spokePool.filters.V3FundsDeposited(
-        null,
+        depositor,
         null,
         null,
         null,
         destinationChainId,
-        depositId,
+        nonce,
         null,
         null,
         null,
@@ -822,12 +824,12 @@ export class SpokePoolClient extends BaseAbstractClient {
     );
     const tStop = Date.now();
 
-    const event = (query as V3FundsDepositedEvent[]).find((deposit) => deposit.args.depositId === depositId);
+    const event = (query as V3FundsDepositedEvent[]).find((deposit) => deposit.args.depositor === depositor && deposit.args.nonce === nonce);
     if (event === undefined) {
       const srcChain = getNetworkName(this.chainId);
       const dstChain = getNetworkName(destinationChainId);
       throw new Error(
-        `Could not find deposit ${depositId} for ${dstChain} fill` +
+        `Could not find deposit for ${dstChain} fill` +
           ` between ${srcChain} blocks [${searchBounds.low}, ${searchBounds.high}]`
       );
     }
