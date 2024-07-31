@@ -14,7 +14,7 @@
   "scripts": {
     "start": "nodemon -e ts,tsx,json,js,jsx --watch ./src --ignore ./dist --exec 'yarn build'",
     "build": "yarn run clean && yarn run build:cjs & yarn run build:esm & yarn run build:types; wait",
-    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./dist/cjs --removeComments --verbatimModuleSyntax false && echo > ./dist/cjs/package.json '{\"type\":\"commonjs\"}' && yarn copy-abi:cjs",
+    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./dist/cjs --removeComments --verbatimModuleSyntax false && echo > ./dist/cjs/package.json '{\"type\":\"commonjs\"}' && yarn copy-abi:cjs && cp -r ./src/sdk_contracts ./dist/cjs/ ",
     "build:esm": "tsc --project tsconfig.build.json --module es2015 --outDir ./dist/esm && echo > ./dist/esm/package.json '{\"type\":\"module\",\"sideEffects\":false}' && yarn copy-abi:esm",
     "build:types": "tsc --project tsconfig.build.json --module esnext --declarationDir ./dist/types --emitDeclarationOnly --declaration --declarationMap",
     "copy-abi:cjs": "DIR=cjs yarn copy-abi",
@@ -138,6 +138,10 @@
     "./dist/esm/*": {
       "require": "./dist/cjs/*.js",
       "import": "./dist/esm/*.js"
+    },
+    "./src/sdk_contracts": {
+      "require": "./src/sdk_contracts/index.js",
+      "import": "./src/sdk_contracts/index.js"
     }
   }
 }

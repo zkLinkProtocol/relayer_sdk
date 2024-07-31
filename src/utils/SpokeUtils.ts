@@ -55,9 +55,10 @@ export function populateV3Relay(
 }
 
 /**
- * Find the block range that contains the deposit ID. This is a binary search that searches for the block range
- * that contains the deposit ID.
- * @param targetDepositId The target deposit ID to search for.
+ * Find the block range that contains the depositor's nonce. This is a binary search that searches for the block range
+ * that contains the depositor's nonce.
+ * @param depositor The target depositor
+ * @param targetNonce The target nonce to search for.
  * @param initLow The initial lower bound of the block range to search.
  * @param initHigh The initial upper bound of the block range to search.
  * @param maxSearches The maximum number of searches to perform. This is used to prevent infinite loops.
@@ -69,7 +70,7 @@ export function populateV3Relay(
  *        // contain the event emitted when deposit ID was incremented to targetDepositId + 1. This is the same transaction
  *        // where the deposit with deposit ID = targetDepositId was created.
  */
-export async function getBlockRangeForDepositId(
+export async function getBlockRangeForDepositorNonce(
   depositor: string,
   targetNonce: number,
   initLow: number,
@@ -116,15 +117,15 @@ export async function getBlockRangeForDepositId(
   // queriedIds cache to see if the deposit ID at the block number has already been queried. If not, it will
   // make an eth_call request to get the deposit ID at the block number. It will then cache the deposit ID
   // in the queriedIds cache.
-  const _getDepositIdAtBlock = async (blockNumber: number): Promise<number> => {
-    queriedIds[blockNumber] ??= await spokePool._getDepositIdAtBlock(depositor, blockNumber);
+  const getNonceBlockWithDepositor = async (blockNumber: number): Promise<number> => {
+    queriedIds[blockNumber] ??= await spokePool._getNonceBlockWithDepositor(depositor, blockNumber);
     return queriedIds[blockNumber];
   };
 
   // Get the the deposit ID at the low block, and the deposit ID at the high block in parallel.
   const [highestDepositIdInRange, lowestDepositIdInRange] = await Promise.all([
-    _getDepositIdAtBlock(initHigh),
-    _getDepositIdAtBlock(Math.max(deploymentBlock, initLow - 1)),
+    getNonceBlockWithDepositor(initHigh),
+    getNonceBlockWithDepositor(Math.max(deploymentBlock, initLow - 1)),
   ]);
 
   // If the deposit ID at the initial high block is less than the target deposit ID, then we know that
@@ -164,7 +165,7 @@ export async function getBlockRangeForDepositId(
     const mid = Math.floor((low + high) / 2);
 
     // Get the deposit ID at the mid point.
-    const midDepositId = await _getDepositIdAtBlock(mid);
+    const midDepositId = await getNonceBlockWithDepositor(mid);
 
     // Let's define the latest ID of the current midpoint block.
     const accountedIdByMidBlock = midDepositId - 1;
@@ -196,18 +197,18 @@ export async function getBlockRangeForDepositId(
   return { low, high };
 }
 
-// /**
-//  * Finds the deposit id at a specific block number.
-//  * @param blockTag The block number to search for the deposit ID at.
-//  * @returns The deposit ID.
-//  */
-export async function getDepositIdAtBlock(depositor: string, contract: Contract, blockTag: number): Promise<number> {
-  const depositIdAtBlock = await contract.nonce(depositor, { blockTag });
-  // Sanity check to ensure that the deposit ID is an integer and is greater than or equal to zero.
-  if (!Number.isInteger(depositIdAtBlock) || depositIdAtBlock < 0) {
-    throw new Error("Invalid deposit count");
+/**
+ * Finds the depositor's nonce at a specific block number.
+ * @param blockTag The block number to search for the nonce at.
+ * @returns The nonce.
+ */
+export async function getNonceBlockWithDepositor(depositor: string, contract: Contract, blockTag: number): Promise<number> {
+  const nonce = await contract.nonce(depositor, { blockTag });
+  // Sanity check to ensure that the nonce is an integer and is greater than or equal to zero.
+  if (!Number.isInteger(nonce) || nonce < 0) {
+    throw new Error("Invalid nonce");
   }
-  return depositIdAtBlock;
+  return nonce;
 }
 
 /**
@@ -229,7 +230,7 @@ export function getRelayDataHash(relayData: RelayData, destinationChainId: numbe
           "uint256 inputAmount," +
           "uint256 outputAmount," +
           "uint256 originChainId," +
-          "uint32 depositId," +
+          "uint32 nonce," +
           "uint32 fillDeadline," +
           "uint32 exclusivityDeadline," +
           "bytes message" +

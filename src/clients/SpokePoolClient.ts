@@ -38,7 +38,7 @@ import {
 } from "../interfaces";
 import { SpokePool } from "../typechain";
 import { getNetworkName } from "../utils/NetworkUtils";
-import { getBlockRangeForDepositId, getDepositIdAtBlock } from "../utils/SpokeUtils";
+import { getBlockRangeForDepositorNonce, getNonceBlockWithDepositor } from "../utils/SpokeUtils";
 import { BaseAbstractClient, isUpdateFailureReason, UpdateFailureReason } from "./BaseAbstractClient";
 import { HubPoolClient } from "./HubPoolClient";
 import { AcrossConfigStoreClient } from "./AcrossConfigStoreClient";
@@ -266,8 +266,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @param nonce The unique ID of the deposit being queried.
    * @returns The corresponding deposit if found, undefined otherwise.
    */
-  public getDeposit(nonce: number): DepositWithBlock | undefined {
-    const depositHash = this.getDepositHash({ nonce, originChainId: this.chainId });
+  public getDeposit(depositor: string, nonce: number): DepositWithBlock | undefined {
+    const depositHash = this.getDepositHash({ depositor, nonce, originChainId: this.chainId });
     return this.depositHashes[depositHash];
   }
 
@@ -334,7 +334,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     );
 
     // Log any invalid deposits with same deposit id but different params.
-    const invalidFillsForDeposit = invalidFills.filter((x) => x.nonce === deposit.nonce);
+    const invalidFillsForDeposit = invalidFills.filter((x) => x.nonce === deposit.nonce && x.depositor === deposit.depositor);
     if (invalidFillsForDeposit.length > 0) {
       this.logger.warn({
         at: "SpokePoolClient",
@@ -365,14 +365,15 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @note This hash is used to match deposits and fills together.
    * @note This hash takes the form of: `${depositId}-${originChainId}`.
    */
-  public getDepositHash(event: { nonce: number; originChainId: number }): string {
-    return `${event.nonce}-${event.originChainId}`;
+  public getDepositHash(event: { depositor: string, nonce: number; originChainId: number }): string {
+    return `${event.depositor}-${event.nonce}-${event.originChainId}`;
   }
 
   /**
-   * Find the block range that contains the deposit ID. This is a binary search that searches for the block range
-   * that contains the deposit ID.
-   * @param targetDepositId The target deposit ID to search for.
+   * Find the block range that contains the depositor's nonce. This is a binary search that searches for the block range
+   * that contains the depositor's nonce.
+   * @param depositor The target depositor
+   * @param targetNonce The target nonce to search for.
    * @param initLow The initial lower bound of the block range to search.
    * @param initHigh The initial upper bound of the block range to search.
    * @param maxSearches The maximum number of searches to perform. This is used to prevent infinite loops.
@@ -384,7 +385,7 @@ export class SpokePoolClient extends BaseAbstractClient {
    *        // contain the event emitted when deposit ID was incremented to targetDepositId + 1. This is the same transaction
    *        // where the deposit with deposit ID = targetDepositId was created.
    */
-  public _getBlockRangeForDepositId(
+  public _getBlockRangeForDepositorNonce(
     depositor: string,
     targetNonce: number,
     initLow: number,
@@ -394,16 +395,16 @@ export class SpokePoolClient extends BaseAbstractClient {
     low: number;
     high: number;
   }> {
-    return getBlockRangeForDepositId(depositor, targetNonce, initLow, initHigh, maxSearches, this);
+    return getBlockRangeForDepositorNonce(depositor, targetNonce, initLow, initHigh, maxSearches, this);
   }
 
   /**
-   * Finds the deposit id at a specific block number.
-   * @param blockTag The block number to search for the deposit ID at.
-   * @returns The deposit ID.
+   * Finds the depositor's nonce at a specific block number.
+   * @param blockTag The block number to search for the nonce at.
+   * @returns The nonce.
    */
-  public _getDepositIdAtBlock(depositor: string, blockTag: number): Promise<number> {
-    return getDepositIdAtBlock(depositor, this.spokePool as SpokePool, blockTag);
+  public _getNonceBlockWithDepositor(depositor: string, blockTag: number): Promise<number> {
+    return getNonceBlockWithDepositor(depositor, this.spokePool as SpokePool, blockTag);
   }
 
   /**
@@ -435,13 +436,13 @@ export class SpokePoolClient extends BaseAbstractClient {
    */
   protected async _update(eventsToQuery: string[]): Promise<SpokePoolUpdate> {
     // Find the earliest known depositId. This assumes no deposits were placed in the deployment block.
-    let firstDepositId: number = this.firstDepositIdForSpokePool;
-    if (firstDepositId === Number.MAX_SAFE_INTEGER) {
-      firstDepositId = await this.spokePool.numberOfDeposits({ blockTag: this.deploymentBlock });
-      if (isNaN(firstDepositId) || firstDepositId < 0) {
-        throw new Error(`SpokePoolClient::update: Invalid first deposit id (${firstDepositId})`);
-      }
-    }
+    // let firstDepositId: number = this.firstDepositIdForSpokePool;
+    // if (firstDepositId === Number.MAX_SAFE_INTEGER) {
+    //   firstDepositId = await this.spokePool.numberOfDeposits({ blockTag: this.deploymentBlock });
+    //   if (isNaN(firstDepositId) || firstDepositId < 0) {
+    //     throw new Error(`SpokePoolClient::update: Invalid first deposit id (${firstDepositId})`);
+    //   }
+    // }
 
     const searchConfig = await this.updateSearchConfig(this.spokePool.provider);
     if (isUpdateFailureReason(searchConfig)) {
@@ -476,8 +477,8 @@ export class SpokePoolClient extends BaseAbstractClient {
     });
 
     const timerStart = Date.now();
-    const [numberOfDeposits, currentTime, oldestTime, ...events] = await Promise.all([
-      this.spokePool.numberOfDeposits({ blockTag: searchConfig.toBlock }),
+    const [currentTime, oldestTime, ...events] = await Promise.all([
+      // this.spokePool.numberOfDeposits({ blockTag: searchConfig.toBlock }),
       this.spokePool.getCurrentTime({ blockTag: searchConfig.toBlock }),
       this.spokePool.getCurrentTime({ blockTag: Math.max(searchConfig.fromBlock, this.deploymentBlock) }),
       ...eventSearchConfigs.map((config) => paginatedEventQuery(this.spokePool, config.filter, config.searchConfig)),
@@ -498,8 +499,8 @@ export class SpokePoolClient extends BaseAbstractClient {
       success: true,
       currentTime: currentTime.toNumber(), // uint32
       oldestTime: oldestTime.toNumber(),
-      firstDepositId,
-      latestDepositId: Math.max(numberOfDeposits - 1, 0),
+      firstDepositId: 0,
+      latestDepositId: 0,
       searchEndBlock: searchConfig.toBlock,
       events,
     };
@@ -558,12 +559,12 @@ export class SpokePoolClient extends BaseAbstractClient {
         }
         assign(this.depositHashes, [this.getDepositHash(deposit)], deposit);
 
-        if (deposit.nonce < this.earliestDepositIdQueried) {
-          this.earliestDepositIdQueried = deposit.nonce;
-        }
-        if (deposit.nonce > this.latestDepositIdQueried) {
-          this.latestDepositIdQueried = deposit.nonce;
-        }
+        // if (deposit.nonce < this.earliestDepositIdQueried) {
+        //   this.earliestDepositIdQueried = deposit.nonce;
+        // }
+        // if (deposit.nonce > this.latestDepositIdQueried) {
+        //   this.latestDepositIdQueried = deposit.nonce;
+        // }
       }
     }
 
@@ -790,7 +791,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     //
     // @dev Limiting between 5-10 searches empirically performs best when there are ~300,000 deposits
     // for a spoke pool and we're looking for a deposit <5 days older than HEAD.
-    const searchBounds = await this._getBlockRangeForDepositId(
+    const searchBounds = await this._getBlockRangeForDepositorNonce(
       depositor,
       nonce,
       this.deploymentBlock,

@@ -50,29 +50,29 @@ export async function queryHistoricalDepositForFill(
     throw new Error("SpokePoolClient must be updated before querying historical deposits");
   }
 
-  const { nonce } = fill;
-  let { firstDepositIdForSpokePool: lowId, lastDepositIdForSpokePool: highId } = spokePoolClient;
-  if (nonce < lowId || nonce > highId) {
-    return {
-      found: false,
-      code: InvalidFill.DepositIdInvalid,
-      reason: `Deposit ID ${nonce} is outside of SpokePool bounds [${lowId},${highId}].`,
-    };
-  }
+  const { depositor, nonce } = fill;
+  // let { firstDepositIdForSpokePool: lowId, lastDepositIdForSpokePool: highId } = spokePoolClient;
+  // if (nonce < lowId || nonce > highId) {
+  //   return {
+  //     found: false,
+  //     code: InvalidFill.DepositIdInvalid,
+  //     reason: `Deposit ID ${nonce} is outside of SpokePool bounds [${lowId},${highId}].`,
+  //   };
+  // }
 
-  ({ earliestDepositIdQueried: lowId, latestDepositIdQueried: highId } = spokePoolClient);
-  if (nonce >= lowId && nonce <= highId) {
-    const deposit = spokePoolClient.getDeposit(nonce);
-    if (isDefined(deposit) && validateFillForDeposit(fill, deposit)) {
-      return { found: true, deposit };
+  // ({ earliestDepositIdQueried: lowId, latestDepositIdQueried: highId } = spokePoolClient);
+  // if (nonce >= lowId && nonce <= highId) {
+    const new_deposit = spokePoolClient.getDeposit(depositor, nonce);
+    if (isDefined(new_deposit) && validateFillForDeposit(fill, new_deposit)) {
+      return { found: true, deposit: new_deposit };
     }
 
-    return {
-      found: false,
-      code: isDefined(deposit) ? InvalidFill.FillMismatch : InvalidFill.DepositIdNotFound,
-      reason: `Deposit ID ${nonce} not found in SpokePoolClient event buffer.`,
-    };
-  }
+  //   return {
+  //     found: false,
+  //     code: isDefined(deposit) ? InvalidFill.FillMismatch : InvalidFill.DepositIdNotFound,
+  //     reason: `Deposit ID ${nonce} not found in SpokePoolClient event buffer.`,
+  //   };
+  // }
 
   let deposit: DepositWithBlock, cachedDeposit: Deposit | undefined;
   if (cache) {
@@ -110,7 +110,7 @@ export async function queryHistoricalDepositForFill(
   return {
     found: false,
     code: InvalidFill.FillMismatch,
-    reason: `Fill is not valid for ${getNetworkName(deposit.originChainId)} deposit ${nonce}`,
+    reason: `Fill is not valid for ${getNetworkName(deposit.originChainId)} depositor ${depositor} with nonce ${nonce}`,
   };
 }
 

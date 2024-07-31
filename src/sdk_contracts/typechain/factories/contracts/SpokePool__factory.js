@@ -417,7 +417,7 @@ const _abi = [
             {
                 indexed: true,
                 internalType: "uint32",
-                name: "depositId",
+                name: "nonce",
                 type: "uint32",
             },
             {
@@ -902,7 +902,7 @@ const _abi = [
             {
                 indexed: true,
                 internalType: "uint32",
-                name: "depositId",
+                name: "nonce",
                 type: "uint32",
             },
             {
@@ -1650,7 +1650,7 @@ const _abi = [
                     },
                     {
                         internalType: "uint32",
-                        name: "depositId",
+                        name: "nonce",
                         type: "uint32",
                     },
                     {
@@ -1682,6 +1682,91 @@ const _abi = [
         name: "fillV3Relay",
         outputs: [],
         stateMutability: "nonpayable",
+        type: "function",
+    },
+    {
+        inputs: [
+            {
+                components: [
+                    {
+                        internalType: "address",
+                        name: "depositor",
+                        type: "address",
+                    },
+                    {
+                        internalType: "address",
+                        name: "recipient",
+                        type: "address",
+                    },
+                    {
+                        internalType: "address",
+                        name: "exclusiveRelayer",
+                        type: "address",
+                    },
+                    {
+                        internalType: "address",
+                        name: "inputToken",
+                        type: "address",
+                    },
+                    {
+                        internalType: "address",
+                        name: "outputToken",
+                        type: "address",
+                    },
+                    {
+                        internalType: "uint256",
+                        name: "inputAmount",
+                        type: "uint256",
+                    },
+                    {
+                        internalType: "uint256",
+                        name: "outputAmount",
+                        type: "uint256",
+                    },
+                    {
+                        internalType: "uint256",
+                        name: "originChainId",
+                        type: "uint256",
+                    },
+                    {
+                        internalType: "uint32",
+                        name: "nonce",
+                        type: "uint32",
+                    },
+                    {
+                        internalType: "uint32",
+                        name: "fillDeadline",
+                        type: "uint32",
+                    },
+                    {
+                        internalType: "uint32",
+                        name: "exclusivityDeadline",
+                        type: "uint32",
+                    },
+                    {
+                        internalType: "bytes",
+                        name: "message",
+                        type: "bytes",
+                    },
+                ],
+                internalType: "struct V3SpokePoolInterface.V3RelayData",
+                name: "relayData",
+                type: "tuple",
+            },
+            {
+                internalType: "uint256",
+                name: "repaymentChainId",
+                type: "uint256",
+            },
+            {
+                internalType: "uint256",
+                name: "_l2TxGasLimit",
+                type: "uint256",
+            },
+        ],
+        name: "testFillv3Relay",
+        outputs: [],
+        stateMutability: "payable",
         type: "function",
     },
     {
@@ -1830,8 +1915,14 @@ const _abi = [
         type: "function",
     },
     {
-        inputs: [],
-        name: "numberOfDeposits",
+        inputs: [
+            {
+                internalType: "address",
+                name: "address",
+                type: "address",
+            },
+        ],
+        name: "nonce",
         outputs: [
             {
                 internalType: "uint32",

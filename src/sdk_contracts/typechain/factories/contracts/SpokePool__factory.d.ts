@@ -334,7 +334,7 @@ export declare class SpokePool__factory {
         }, {
             readonly indexed: true;
             readonly internalType: "uint32";
-            readonly name: "depositId";
+            readonly name: "nonce";
             readonly type: "uint32";
         }, {
             readonly indexed: false;
@@ -726,7 +726,7 @@ export declare class SpokePool__factory {
         }, {
             readonly indexed: true;
             readonly internalType: "uint32";
-            readonly name: "depositId";
+            readonly name: "nonce";
             readonly type: "uint32";
         }, {
             readonly indexed: false;
@@ -1313,7 +1313,7 @@ export declare class SpokePool__factory {
                 readonly type: "uint256";
             }, {
                 readonly internalType: "uint32";
-                readonly name: "depositId";
+                readonly name: "nonce";
                 readonly type: "uint32";
             }, {
                 readonly internalType: "uint32";
@@ -1339,6 +1339,73 @@ export declare class SpokePool__factory {
         readonly name: "fillV3Relay";
         readonly outputs: readonly [];
         readonly stateMutability: "nonpayable";
+        readonly type: "function";
+    }, {
+        readonly inputs: readonly [{
+            readonly components: readonly [{
+                readonly internalType: "address";
+                readonly name: "depositor";
+                readonly type: "address";
+            }, {
+                readonly internalType: "address";
+                readonly name: "recipient";
+                readonly type: "address";
+            }, {
+                readonly internalType: "address";
+                readonly name: "exclusiveRelayer";
+                readonly type: "address";
+            }, {
+                readonly internalType: "address";
+                readonly name: "inputToken";
+                readonly type: "address";
+            }, {
+                readonly internalType: "address";
+                readonly name: "outputToken";
+                readonly type: "address";
+            }, {
+                readonly internalType: "uint256";
+                readonly name: "inputAmount";
+                readonly type: "uint256";
+            }, {
+                readonly internalType: "uint256";
+                readonly name: "outputAmount";
+                readonly type: "uint256";
+            }, {
+                readonly internalType: "uint256";
+                readonly name: "originChainId";
+                readonly type: "uint256";
+            }, {
+                readonly internalType: "uint32";
+                readonly name: "nonce";
+                readonly type: "uint32";
+            }, {
+                readonly internalType: "uint32";
+                readonly name: "fillDeadline";
+                readonly type: "uint32";
+            }, {
+                readonly internalType: "uint32";
+                readonly name: "exclusivityDeadline";
+                readonly type: "uint32";
+            }, {
+                readonly internalType: "bytes";
+                readonly name: "message";
+                readonly type: "bytes";
+            }];
+            readonly internalType: "struct V3SpokePoolInterface.V3RelayData";
+            readonly name: "relayData";
+            readonly type: "tuple";
+        }, {
+            readonly internalType: "uint256";
+            readonly name: "repaymentChainId";
+            readonly type: "uint256";
+        }, {
+            readonly internalType: "uint256";
+            readonly name: "_l2TxGasLimit";
+            readonly type: "uint256";
+        }];
+        readonly name: "testFillv3Relay";
+        readonly outputs: readonly [];
+        readonly stateMutability: "payable";
         readonly type: "function";
     }, {
         readonly inputs: readonly [{
@@ -1454,8 +1521,12 @@ export declare class SpokePool__factory {
         readonly stateMutability: "nonpayable";
         readonly type: "function";
     }, {
-        readonly inputs: readonly [];
-        readonly name: "numberOfDeposits";
+        readonly inputs: readonly [{
+            readonly internalType: "address";
+            readonly name: "address";
+            readonly type: "address";
+        }];
+        readonly name: "nonce";
         readonly outputs: readonly [{
             readonly internalType: "uint32";
             readonly name: "";

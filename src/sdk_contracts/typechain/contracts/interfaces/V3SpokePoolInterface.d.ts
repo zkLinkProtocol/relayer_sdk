@@ -82,6 +82,7 @@ export interface V3SpokePoolInterfaceInterface extends utils.Interface {
         "depositV3Now(address,address,address,address,uint256,uint256,uint256,address,uint32,uint32,bytes)": FunctionFragment;
         "executeV3SlowRelayLeaf(((address,address,address,address,address,uint256,uint256,uint256,uint32,uint32,uint32,bytes),uint256,uint256),uint32,bytes32[])": FunctionFragment;
         "fillV3Relay((address,address,address,address,address,uint256,uint256,uint256,uint32,uint32,uint32,bytes),uint256)": FunctionFragment;
+        "testFillv3Relay((address,address,address,address,address,uint256,uint256,uint256,uint32,uint32,uint32,bytes),uint256,uint256)": FunctionFragment;
         "fillV3RelayWithUpdatedDeposit((address,address,address,address,address,uint256,uint256,uint256,uint32,uint32,uint32,bytes),uint256,uint256,address,bytes,bytes)": FunctionFragment;
         "requestV3SlowFill((address,address,address,address,address,uint256,uint256,uint256,uint32,uint32,uint32,bytes))": FunctionFragment;
         "speedUpV3Deposit(address,uint32,uint256,address,bytes,bytes)": FunctionFragment;
@@ -116,6 +117,7 @@ export interface V3SpokePoolInterfaceInterface extends utils.Interface {
     ]): string;
     encodeFunctionData(functionFragment: "executeV3SlowRelayLeaf", values: [V3SpokePoolInterface.V3SlowFillStruct, BigNumberish, BytesLike[]]): string;
     encodeFunctionData(functionFragment: "fillV3Relay", values: [V3SpokePoolInterface.V3RelayDataStruct, BigNumberish]): string;
+    encodeFunctionData(functionFragment: "testFillv3Relay", values: [V3SpokePoolInterface.V3RelayDataStruct, BigNumberish, BigNumberish]): string;
     encodeFunctionData(functionFragment: "fillV3RelayWithUpdatedDeposit", values: [
         V3SpokePoolInterface.V3RelayDataStruct,
         BigNumberish,
@@ -130,6 +132,7 @@ export interface V3SpokePoolInterfaceInterface extends utils.Interface {
     decodeFunctionResult(functionFragment: "depositV3Now", data: BytesLike): Result;
     decodeFunctionResult(functionFragment: "executeV3SlowRelayLeaf", data: BytesLike): Result;
     decodeFunctionResult(functionFragment: "fillV3Relay", data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: "testFillv3Relay", data: BytesLike): Result;
     decodeFunctionResult(functionFragment: "fillV3RelayWithUpdatedDeposit", data: BytesLike): Result;
     decodeFunctionResult(functionFragment: "requestV3SlowFill", data: BytesLike): Result;
     decodeFunctionResult(functionFragment: "speedUpV3Deposit", data: BytesLike): Result;
@@ -283,6 +286,9 @@ export interface V3SpokePoolInterface extends BaseContract {
         fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
             from?: string;
         }): Promise<ContractTransaction>;
+        testFillv3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, _l2TxGasLimit: BigNumberish, overrides?: Overrides & {
+            from?: string;
+        }): Promise<ContractTransaction>;
         fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
             from?: string;
         }): Promise<ContractTransaction>;
@@ -305,6 +311,9 @@ export interface V3SpokePoolInterface extends BaseContract {
     fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
         from?: string;
     }): Promise<ContractTransaction>;
+    testFillv3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, _l2TxGasLimit: BigNumberish, overrides?: Overrides & {
+        from?: string;
+    }): Promise<ContractTransaction>;
     fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
         from?: string;
     }): Promise<ContractTransaction>;
@@ -319,6 +328,7 @@ export interface V3SpokePoolInterface extends BaseContract {
         depositV3Now(depositor: string, recipient: string, inputToken: string, outputToken: string, inputAmount: BigNumberish, outputAmount: BigNumberish, destinationChainId: BigNumberish, exclusiveRelayer: string, fillDeadlineOffset: BigNumberish, exclusivityDeadline: BigNumberish, message: BytesLike, overrides?: CallOverrides): Promise<void>;
         executeV3SlowRelayLeaf(slowFillLeaf: V3SpokePoolInterface.V3SlowFillStruct, rootBundleId: BigNumberish, proof: BytesLike[], overrides?: CallOverrides): Promise<void>;
         fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+        testFillv3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, _l2TxGasLimit: BigNumberish, overrides?: CallOverrides): Promise<void>;
         fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: CallOverrides): Promise<void>;
         requestV3SlowFill(relayData: V3SpokePoolInterface.V3RelayDataStruct, overrides?: CallOverrides): Promise<void>;
         speedUpV3Deposit(depositor: string, depositId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: CallOverrides): Promise<void>;
@@ -346,6 +356,9 @@ export interface V3SpokePoolInterface extends BaseContract {
         fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
             from?: string;
         }): Promise<BigNumber>;
+        testFillv3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, _l2TxGasLimit: BigNumberish, overrides?: Overrides & {
+            from?: string;
+        }): Promise<BigNumber>;
         fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
             from?: string;
         }): Promise<BigNumber>;
@@ -367,6 +380,9 @@ export interface V3SpokePoolInterface extends BaseContract {
             from?: string;
         }): Promise<PopulatedTransaction>;
         fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
+            from?: string;
+        }): Promise<PopulatedTransaction>;
+        testFillv3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, _l2TxGasLimit: BigNumberish, overrides?: Overrides & {
             from?: string;
         }): Promise<PopulatedTransaction>;
         fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {

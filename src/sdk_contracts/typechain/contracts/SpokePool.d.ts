@@ -567,6 +567,12 @@ export interface SpokePool extends BaseContract {
       fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
           from?: string;
       }): Promise<ContractTransaction>;
+      testFillv3Relay(
+        relayData: V3SpokePoolInterface.V3RelayDataStruct,
+        repaymentChainId: BigNumberish,
+        _l2TxGasLimit: BigNumberish,
+        overrides?: PayableOverrides & { from?: string }
+      ): Promise<ContractTransaction>;
       fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
           from?: string;
       }): Promise<ContractTransaction>;
@@ -662,6 +668,12 @@ export interface SpokePool extends BaseContract {
   fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
       from?: string;
   }): Promise<ContractTransaction>;
+  testfillV3Relay(
+    relayData: V3SpokePoolInterface.V3RelayDataStruct,
+    repaymentChainId: BigNumberish,
+    _l2TxGasLimit: BigNumberish,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
   fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
       from?: string;
   }): Promise<ContractTransaction>;
@@ -737,6 +749,12 @@ export interface SpokePool extends BaseContract {
       fillDeadlineBuffer(overrides?: CallOverrides): Promise<number>;
       fillStatuses(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
       fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+      testFillv3Relay(
+        relayData: V3SpokePoolInterface.V3RelayDataStruct,
+        repaymentChainId: BigNumberish,
+        _l2TxGasLimit: BigNumberish,
+        overrides?: CallOverrides
+      ): Promise<string>;
       fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: CallOverrides): Promise<void>;
       getCurrentTime(overrides?: CallOverrides): Promise<BigNumber>;
       hubPool(overrides?: CallOverrides): Promise<string>;
@@ -849,6 +867,12 @@ export interface SpokePool extends BaseContract {
       fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
           from?: string;
       }): Promise<BigNumber>;
+      testFillv3Relay(
+        relayData: V3SpokePoolInterface.V3RelayDataStruct,
+        repaymentChainId: BigNumberish,
+        _l2TxGasLimit: BigNumberish,
+        overrides?: PayableOverrides & { from?: string }
+      ): Promise<BigNumber>;
       fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
           from?: string;
       }): Promise<BigNumber>;
@@ -939,6 +963,12 @@ export interface SpokePool extends BaseContract {
       fillV3Relay(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, overrides?: Overrides & {
           from?: string;
       }): Promise<PopulatedTransaction>;
+      testFillv3Relay(
+        relayData: V3SpokePoolInterface.V3RelayDataStruct,
+        repaymentChainId: BigNumberish,
+        _l2TxGasLimit: BigNumberish,
+        overrides?: PayableOverrides & { from?: string }
+      ): Promise<PopulatedTransaction>;
       fillV3RelayWithUpdatedDeposit(relayData: V3SpokePoolInterface.V3RelayDataStruct, repaymentChainId: BigNumberish, updatedOutputAmount: BigNumberish, updatedRecipient: string, updatedMessage: BytesLike, depositorSignature: BytesLike, overrides?: Overrides & {
           from?: string;
       }): Promise<PopulatedTransaction>;
