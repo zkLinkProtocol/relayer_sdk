@@ -2,4 +2,4 @@ export {
   getContractInfoFromAddress,
   getDeployedAddress,
   getDeployedBlockNumber,
-} from "../sdk_contracts/src/DeploymentUtils";
+} from "@across-protocol/contracts/dist/src/DeploymentUtils";

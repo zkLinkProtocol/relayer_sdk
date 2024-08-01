@@ -1,4 +1,4 @@
-import { MerkleTree } from "../sdk_contracts/utils";
+import { MerkleTree } from "@across-protocol/contracts/dist/utils";
 import { ethers } from "ethers";
 import { DistributionRecipientsWithProofs, DistributionRecipient } from "./model";
 
