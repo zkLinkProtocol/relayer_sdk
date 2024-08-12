@@ -100,7 +100,7 @@
   "dependencies": {
     "@across-protocol/across-token": "^1.0.0",
     "@across-protocol/constants": "^3.1.5",
-    "@across-protocol/contracts": "https://github.com/zksemi/across_contracts.git",
+    "@across-protocol/contracts": "https://github.com/zkLinkProtocol/relayer_contracts.git",
     "@eth-optimism/sdk": "^3.3.1",
     "@pinata/sdk": "^2.1.0",
     "@types/mocha": "^10.0.1",
