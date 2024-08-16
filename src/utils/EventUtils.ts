@@ -6,6 +6,12 @@ import { Contract, Event, EventFilter } from "ethers";
 const maxRetries = 3;
 const retrySleepTime = 10;
 
+const EVENT_MAP : { [key: string]: string } = {
+  "intentOwner": "depositor",
+  "intentReceiver": "recipient",
+  "payload": "message",
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function spreadEvent(args: Result = {} as Result): any {
   const keys = Object.keys(args).filter((key: string) => isNaN(+key)); // Extract non-numeric keys.
@@ -17,7 +23,11 @@ export function spreadEvent(args: Result = {} as Result): any {
       case "boolean": // fallthrough
       case "number":
       case "string":
-        returnedObject[key] = args[key];
+        if (key in EVENT_MAP) {
+          returnedObject[EVENT_MAP[key]] = args[key];
+        } else {
+          returnedObject[key] = args[key];
+        }
         break;
       case "object":
         if (Array.isArray(args[key])) {

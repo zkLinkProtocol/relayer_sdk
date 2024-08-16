@@ -15,7 +15,6 @@ import {
 import {
   paginatedEventQuery,
   sortEventsAscendingInPlace,
-  spreadEvent,
   spreadEventWithBlockNumber,
 } from "../utils/EventUtils";
 import { validateFillForDeposit } from "../utils/FlowUtils";
@@ -108,14 +107,16 @@ export class SpokePoolClient extends BaseAbstractClient {
 
   public _queryableEventNames(): { [eventName: string]: EventFilter } {
     const knownEventNames = [
-      "EnabledDepositRoute",
-      "TokensBridged",
-      "RelayedRootBundle",
-      "ExecutedRelayerRefundRoot",
-      "V3FundsDeposited",
-      "RequestedSpeedUpV3Deposit",
-      "RequestedV3SlowFill",
-      "FilledV3Relay",
+      // "EnabledDepositRoute",
+      // "TokensBridged",
+      // "RelayedRootBundle",
+      // "ExecutedRelayerRefundRoot",
+      // "V3FundsDeposited",
+      // "RequestedSpeedUpV3Deposit",
+      // "RequestedV3SlowFill",
+      // "FilledV3Relay",
+      "IntentCreated",
+      "IntentFilled",
     ];
     return Object.fromEntries(
       this.spokePool.interface.fragments
@@ -460,9 +461,9 @@ export class SpokePoolClient extends BaseAbstractClient {
       // By default, an event's query range is controlled by the `eventSearchConfig` passed in during instantiation.
       // However, certain events have special overriding requirements to their search ranges:
       // - EnabledDepositRoute: The full history is always required, so override the requested fromBlock.
-      if (eventName === "EnabledDepositRoute" && !this.isUpdated) {
-        _searchConfig.fromBlock = this.deploymentBlock;
-      }
+      // if (eventName === "EnabledDepositRoute" && !this.isUpdated) {
+      //   _searchConfig.fromBlock = this.deploymentBlock;
+      // }
 
       return {
         filter: this._queryableEventNames()[eventName],
@@ -479,16 +480,14 @@ export class SpokePoolClient extends BaseAbstractClient {
     const timerStart = Date.now();
     const [currentTime, oldestTime, ...events] = await Promise.all([
       // this.spokePool.numberOfDeposits({ blockTag: searchConfig.toBlock }),
-      this.spokePool.getCurrentTime({ blockTag: searchConfig.toBlock }),
-      this.spokePool.getCurrentTime({ blockTag: Math.max(searchConfig.fromBlock, this.deploymentBlock) }),
+      (await this.spokePool.provider.getBlock(searchConfig.toBlock)).timestamp,
+      (await this.spokePool.provider.getBlock(Math.max(searchConfig.fromBlock, this.deploymentBlock))).timestamp,
       ...eventSearchConfigs.map((config) => paginatedEventQuery(this.spokePool, config.filter, config.searchConfig)),
     ]);
     this.log("debug", `Time to query new events from RPC for ${this.chainId}: ${Date.now() - timerStart} ms`);
 
-    if (!BigNumber.isBigNumber(currentTime) || currentTime.lt(this.currentTime)) {
-      const errMsg = BigNumber.isBigNumber(currentTime)
-        ? `currentTime: ${currentTime} < ${toBN(this.currentTime)}`
-        : `currentTime is not a BigNumber: ${JSON.stringify(currentTime)}`;
+    if (currentTime < this.currentTime) {
+      const errMsg = `currentTime: ${currentTime} < ${this.currentTime}`;
       throw new Error(`SpokePoolClient::update: ${errMsg}`);
     }
 
@@ -497,8 +496,8 @@ export class SpokePoolClient extends BaseAbstractClient {
 
     return {
       success: true,
-      currentTime: currentTime.toNumber(), // uint32
-      oldestTime: oldestTime.toNumber(),
+      currentTime,
+      oldestTime,
       firstDepositId: 0,
       latestDepositId: 0,
       searchEndBlock: searchConfig.toBlock,
@@ -525,15 +524,15 @@ export class SpokePoolClient extends BaseAbstractClient {
     }
     const { events: queryResults, currentTime, oldestTime, searchEndBlock } = update;
 
-    if (eventsToQuery.includes("TokensBridged")) {
-      for (const event of queryResults[eventsToQuery.indexOf("TokensBridged")]) {
-        this.tokensBridged.push(spreadEventWithBlockNumber(event) as TokensBridged);
-      }
-    }
+    // if (eventsToQuery.includes("TokensBridged")) {
+    //   for (const event of queryResults[eventsToQuery.indexOf("TokensBridged")]) {
+    //     this.tokensBridged.push(spreadEventWithBlockNumber(event) as TokensBridged);
+    //   }
+    // }
 
-    if (eventsToQuery.includes("V3FundsDeposited")) {
+    if (eventsToQuery.includes("IntentCreated")) {
       const depositEvents = [
-        ...((queryResults[eventsToQuery.indexOf("V3FundsDeposited")] ?? []) as V3FundsDepositedEvent[]),
+        ...((queryResults[eventsToQuery.indexOf("IntentCreated")] ?? []) as V3FundsDepositedEvent[]),
       ];
       if (depositEvents.length > 0) {
         this.log("debug", `Using ${depositEvents.length} newly queried deposit events for chain ${this.chainId}`, {
@@ -572,43 +571,43 @@ export class SpokePoolClient extends BaseAbstractClient {
     // speed ups as well? For example, do we need to also consider that the speed up is before the fill
     // timestamp to be applied for the fill? My brain hurts.
     // Update deposits with speed up requests from depositor.
-    if (eventsToQuery.includes("RequestedSpeedUpV3Deposit")) {
-      const speedUpEvents = [...(queryResults[eventsToQuery.indexOf("RequestedSpeedUpV3Deposit")] ?? [])];
+    // if (eventsToQuery.includes("RequestedSpeedUpV3Deposit")) {
+    //   const speedUpEvents = [...(queryResults[eventsToQuery.indexOf("RequestedSpeedUpV3Deposit")] ?? [])];
 
-      for (const event of speedUpEvents) {
-        const speedUp: SpeedUp = { ...spreadEvent(event.args), originChainId: this.chainId };
-        assign(this.speedUps, [speedUp.depositor, speedUp.nonce], [speedUp]);
+    //   for (const event of speedUpEvents) {
+    //     const speedUp: SpeedUp = { ...spreadEvent(event.args), originChainId: this.chainId };
+    //     assign(this.speedUps, [speedUp.depositor, speedUp.nonce], [speedUp]);
 
-        // Find deposit hash matching this speed up event and update the deposit data associated with the hash,
-        // if the hash+data exists.
-        const depositHash = this.getDepositHash(speedUp);
+    //     // Find deposit hash matching this speed up event and update the deposit data associated with the hash,
+    //     // if the hash+data exists.
+    //     const depositHash = this.getDepositHash(speedUp);
 
-        // We can assume all deposits in this lookback window are loaded in-memory already so if the depositHash
-        // is not mapped to a deposit, then we can throw away the speedup as it can't be applied to anything.
-        const depositDataAssociatedWithSpeedUp = this.depositHashes[depositHash];
-        if (isDefined(depositDataAssociatedWithSpeedUp)) {
-          this.depositHashes[depositHash] = this.appendMaxSpeedUpSignatureToDeposit(depositDataAssociatedWithSpeedUp);
-        }
-      }
-    }
+    //     // We can assume all deposits in this lookback window are loaded in-memory already so if the depositHash
+    //     // is not mapped to a deposit, then we can throw away the speedup as it can't be applied to anything.
+    //     const depositDataAssociatedWithSpeedUp = this.depositHashes[depositHash];
+    //     if (isDefined(depositDataAssociatedWithSpeedUp)) {
+    //       this.depositHashes[depositHash] = this.appendMaxSpeedUpSignatureToDeposit(depositDataAssociatedWithSpeedUp);
+    //     }
+    //   }
+    // }
 
-    if (eventsToQuery.includes("RequestedV3SlowFill")) {
-      const slowFillRequests = queryResults[eventsToQuery.indexOf("RequestedV3SlowFill")];
-      for (const event of slowFillRequests) {
-        const slowFillRequest: SlowFillRequestWithBlock = {
-          ...(spreadEventWithBlockNumber(event) as SlowFillRequestWithBlock),
-          destinationChainId: this.chainId,
-        };
-        const relayDataHash = getRelayDataHash(slowFillRequest, this.chainId);
-        if (this.slowFillRequests[relayDataHash] !== undefined) {
-          continue;
-        }
-        this.slowFillRequests[relayDataHash] = slowFillRequest;
-      }
-    }
+    // if (eventsToQuery.includes("RequestedV3SlowFill")) {
+    //   const slowFillRequests = queryResults[eventsToQuery.indexOf("RequestedV3SlowFill")];
+    //   for (const event of slowFillRequests) {
+    //     const slowFillRequest: SlowFillRequestWithBlock = {
+    //       ...(spreadEventWithBlockNumber(event) as SlowFillRequestWithBlock),
+    //       destinationChainId: this.chainId,
+    //     };
+    //     const relayDataHash = getRelayDataHash(slowFillRequest, this.chainId);
+    //     if (this.slowFillRequests[relayDataHash] !== undefined) {
+    //       continue;
+    //     }
+    //     this.slowFillRequests[relayDataHash] = slowFillRequest;
+    //   }
+    // }
 
-    if (eventsToQuery.includes("FilledV3Relay")) {
-      const fillEvents = [...((queryResults[eventsToQuery.indexOf("FilledV3Relay")] ?? []) as FilledV3RelayEvent[])];
+    if (eventsToQuery.includes("IntentFilled")) {
+      const fillEvents = [...((queryResults[eventsToQuery.indexOf("IntentFilled")] ?? []) as FilledV3RelayEvent[])];
 
       if (fillEvents.length > 0) {
         this.log("debug", `Using ${fillEvents.length} newly queried fill events for chain ${this.chainId}`, {
@@ -629,37 +628,37 @@ export class SpokePoolClient extends BaseAbstractClient {
       }
     }
 
-    if (eventsToQuery.includes("EnabledDepositRoute")) {
-      const enableDepositsEvents = queryResults[eventsToQuery.indexOf("EnabledDepositRoute")];
+    // if (eventsToQuery.includes("EnabledDepositRoute")) {
+    //   const enableDepositsEvents = queryResults[eventsToQuery.indexOf("EnabledDepositRoute")];
 
-      for (const event of enableDepositsEvents) {
-        const enableDeposit = spreadEvent(event.args);
-        assign(
-          this.depositRoutes,
-          [enableDeposit.originToken, enableDeposit.destinationChainId],
-          enableDeposit.enabled
-        );
-      }
-    }
+    //   for (const event of enableDepositsEvents) {
+    //     const enableDeposit = spreadEvent(event.args);
+    //     assign(
+    //       this.depositRoutes,
+    //       [enableDeposit.originToken, enableDeposit.destinationChainId],
+    //       enableDeposit.enabled
+    //     );
+    //   }
+    // }
 
-    if (eventsToQuery.includes("RelayedRootBundle")) {
-      const relayedRootBundleEvents = queryResults[eventsToQuery.indexOf("RelayedRootBundle")];
-      for (const event of relayedRootBundleEvents) {
-        this.rootBundleRelays.push(spreadEventWithBlockNumber(event) as RootBundleRelayWithBlock);
-      }
-    }
+    // if (eventsToQuery.includes("RelayedRootBundle")) {
+    //   const relayedRootBundleEvents = queryResults[eventsToQuery.indexOf("RelayedRootBundle")];
+    //   for (const event of relayedRootBundleEvents) {
+    //     this.rootBundleRelays.push(spreadEventWithBlockNumber(event) as RootBundleRelayWithBlock);
+    //   }
+    // }
 
-    if (eventsToQuery.includes("ExecutedRelayerRefundRoot")) {
-      const refundEvents = queryResults[eventsToQuery.indexOf("ExecutedRelayerRefundRoot")];
-      for (const event of refundEvents) {
-        const executedRefund = spreadEventWithBlockNumber(event) as RelayerRefundExecutionWithBlock;
-        executedRefund.l2TokenAddress = SpokePoolClient.getExecutedRefundLeafL2Token(
-          executedRefund.chainId,
-          executedRefund.l2TokenAddress
-        );
-        this.relayerRefundExecutions.push(executedRefund);
-      }
-    }
+    // if (eventsToQuery.includes("ExecutedRelayerRefundRoot")) {
+    //   const refundEvents = queryResults[eventsToQuery.indexOf("ExecutedRelayerRefundRoot")];
+    //   for (const event of refundEvents) {
+    //     const executedRefund = spreadEventWithBlockNumber(event) as RelayerRefundExecutionWithBlock;
+    //     executedRefund.l2TokenAddress = SpokePoolClient.getExecutedRefundLeafL2Token(
+    //       executedRefund.chainId,
+    //       executedRefund.l2TokenAddress
+    //     );
+    //     this.relayerRefundExecutions.push(executedRefund);
+    //   }
+    // }
 
     // Next iteration should start off from where this one ended.
     this.currentTime = currentTime;
@@ -808,12 +807,11 @@ export class SpokePoolClient extends BaseAbstractClient {
         null,
         null,
         null,
+        null,
+        null,
         destinationChainId,
         nonce,
         null,
-        null,
-        null,
-        depositor,
         null,
         null,
         null

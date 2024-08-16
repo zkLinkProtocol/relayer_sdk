@@ -259,7 +259,7 @@ export async function relayFillStatus(
   blockTag?: number | "latest",
   destinationChainId?: number
 ): Promise<FillStatus> {
-  destinationChainId ??= await spokePool.chainId();
+  destinationChainId ??= (await spokePool.provider.getNetwork()).chainId;
   const hash = getRelayDataHash(relayData, destinationChainId!);
   const _fillStatus = await spokePool.fillStatuses(hash, { blockTag });
   const fillStatus = Number(_fillStatus);
@@ -278,7 +278,7 @@ export async function fillStatusArray(
   blockTag: BlockTag = "latest"
 ): Promise<(FillStatus | undefined)[]> {
   const fillStatuses = "fillStatuses";
-  const destinationChainId = await spokePool.chainId();
+  const destinationChainId = (await spokePool.provider.getNetwork()).chainId;
 
   const queries = relayData.map((relayData) => {
     const hash = getRelayDataHash(relayData, destinationChainId);
@@ -333,7 +333,7 @@ export async function findFillBlock(
   // @todo Sub out actual chain IDs w/ CHAIN_IDs constants
   const destinationChainId = Object.values(CHAIN_IDs).includes(relayData.originChainId)
     ? (await provider.getNetwork()).chainId
-    : Number(await spokePool.chainId());
+    : (await spokePool.provider.getNetwork()).chainId;
   assert(
     relayData.originChainId !== destinationChainId,
     `Origin & destination chain IDs must not be equal (${destinationChainId})`
