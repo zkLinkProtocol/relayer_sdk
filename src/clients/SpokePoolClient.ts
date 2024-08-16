@@ -726,20 +726,21 @@ export class SpokePoolClient extends BaseAbstractClient {
       });
     }
 
-    const deposits = depositEvents.map(({ args }) => {
-      // For v3 deposits, leave payment chain ID undefined so we don't compute lp fee since we don't have the
-      // payment chain ID until we match this deposit with a fill.
-      const { inputToken, inputAmount, quoteTimestamp } = args;
-      return {
-        inputToken,
-        inputAmount,
-        originChainId: this.chainId,
-        paymentChainId: undefined,
-        quoteTimestamp,
-      };
-    });
+    // const deposits = depositEvents.map(({ args }) => {
+    //   // For v3 deposits, leave payment chain ID undefined so we don't compute lp fee since we don't have the
+    //   // payment chain ID until we match this deposit with a fill.
+    //   const { inputToken, inputAmount, quoteTimestamp } = args;
+    //   return {
+    //     inputToken,
+    //     inputAmount,
+    //     originChainId: this.chainId,
+    //     paymentChainId: undefined,
+    //     quoteTimestamp,
+    //   };
+    // });
 
-    return deposits.length > 0 ? await this.hubPoolClient.batchComputeRealizedLpFeePct(deposits) : [];
+    // return deposits.length > 0 ? await this.hubPoolClient.batchComputeRealizedLpFeePct(deposits) : [];
+    return [];
   }
 
   /**
@@ -825,7 +826,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     );
     const tStop = Date.now();
 
-    const event = (query as V3FundsDepositedEvent[]).find((deposit) => deposit.args.depositor === depositor && deposit.args.nonce === nonce);
+    const event = (query as V3FundsDepositedEvent[]).find((deposit) => deposit.args.intentOwner === depositor && deposit.args.nonce === nonce);
     if (event === undefined) {
       const srcChain = getNetworkName(this.chainId);
       const dstChain = getNetworkName(destinationChainId);

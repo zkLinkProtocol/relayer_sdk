@@ -14,9 +14,9 @@
   "scripts": {
     "start": "nodemon -e ts,tsx,json,js,jsx --watch ./src --ignore ./dist --exec 'yarn build'",
     "build": "yarn run clean && yarn run build:cjs & yarn run build:esm & yarn run build:types; wait",
-    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./dist/cjs --removeComments --verbatimModuleSyntax false && echo > ./dist/cjs/package.json '{\"type\":\"commonjs\"}' && yarn copy-abi:cjs && cp -r ./src/typechain ./dist/cjs/",
-    "build:esm": "tsc --project tsconfig.build.json --module es2015 --outDir ./dist/esm && echo > ./dist/esm/package.json '{\"type\":\"module\",\"sideEffects\":false}' && yarn copy-abi:esm && cp -r ./src/typechain ./dist/esm/",
-    "build:types": "tsc --project tsconfig.build.json --module esnext --declarationDir ./dist/types --emitDeclarationOnly --declaration --declarationMap && cp -r ./src/typechain ./dist/types/",
+    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./dist/cjs --removeComments --verbatimModuleSyntax false && echo > ./dist/cjs/package.json '{\"type\":\"commonjs\"}' && yarn copy-abi:cjs",
+    "build:esm": "tsc --project tsconfig.build.json --module es2015 --outDir ./dist/esm && echo > ./dist/esm/package.json '{\"type\":\"module\",\"sideEffects\":false}' && yarn copy-abi:esm",
+    "build:types": "tsc --project tsconfig.build.json --module esnext --declarationDir ./dist/types --emitDeclarationOnly --declaration --declarationMap",
     "copy-abi:cjs": "DIR=cjs yarn copy-abi",
     "copy-abi:esm": "DIR=esm yarn copy-abi",
     "copy-abi": "abi=utils/abi/contracts; dstdir=\"./dist/${DIR}/${abi}\"; mkdir -p \"${dstdir}\"; cp ./src/${abi}/*.json \"${dstdir}\"",
