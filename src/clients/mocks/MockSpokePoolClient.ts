@@ -155,27 +155,27 @@ export class MockSpokePoolClient extends SpokePoolClient {
     const event = "V3FundsDeposited";
 
     const { blockNumber, transactionIndex } = deposit;
-    let { nonce, depositor, destinationChainId, inputToken, inputAmount, outputToken, outputAmount } = deposit;
+    let { nonce, intentOwner, destinationChainId, inputToken, inputAmount, outputToken, outputAmount } = deposit;
     nonce ??= this.numberOfDeposits;
     assert(nonce >= this.numberOfDeposits, `${nonce} < ${this.numberOfDeposits}`);
     this.numberOfDeposits = nonce + 1;
 
     destinationChainId ??= random(1, 42161, false);
-    depositor ??= randomAddress();
+    intentOwner ??= randomAddress();
     inputToken ??= randomAddress();
     outputToken ??= inputToken;
     inputAmount ??= toBNWei(random(1, 1000, false));
     outputAmount ??= inputAmount.mul(toBN("0.95"));
 
-    const message = deposit["message"] ?? `${event} event at block ${blockNumber}, index ${transactionIndex}.`;
-    const topics = [destinationChainId, nonce, depositor];
+    const message = deposit["payload"] ?? `${event} event at block ${blockNumber}, index ${transactionIndex}.`;
+    const topics = [destinationChainId, nonce, intentOwner];
     const quoteTimestamp = deposit.quoteTimestamp ?? getCurrentTime();
     const args = {
       nonce,
       originChainId: deposit.originChainId ?? this.chainId,
       destinationChainId,
-      depositor,
-      recipient: deposit.recipient ?? depositor,
+      intentOwner,
+      recipient: deposit.intentReceiver ?? intentOwner,
       inputToken,
       inputAmount,
       outputToken,
@@ -211,8 +211,8 @@ export class MockSpokePoolClient extends SpokePoolClient {
     relayer ??= randomAddress();
 
     const topics = [originChainId, nonce, relayer];
-    const recipient = fill.recipient ?? randomAddress();
-    const message = fill["message"] ?? `${event} event at block ${blockNumber}, index ${transactionIndex}.`;
+    const recipient = fill.intentReceiver ?? randomAddress();
+    const message = fill["payload"] ?? `${event} event at block ${blockNumber}, index ${transactionIndex}.`;
 
     const args = {
       inputToken,
@@ -226,7 +226,7 @@ export class MockSpokePoolClient extends SpokePoolClient {
       exclusivityDeadline: fill.exclusivityDeadline ?? fillDeadline,
       exclusiveRelayer: fill.exclusiveRelayer ?? ZERO_ADDRESS,
       relayer,
-      depositor: fill.depositor ?? randomAddress(),
+      depositor: fill.intentOwner ?? randomAddress(),
       recipient,
       message,
       relayExecutionInfo: {
@@ -286,9 +286,9 @@ export class MockSpokePoolClient extends SpokePoolClient {
       relayer: ZERO_ADDRESS,
       repaymentChainId: 0,
       relayExecutionInfo: {
-        updatedRecipient: leaf.relayData.recipient,
+        updatedRecipient: leaf.relayData.intentReceiver,
         updatedOutputAmount: leaf.updatedOutputAmount,
-        updatedMessage: leaf.relayData.message,
+        updatedMessage: leaf.relayData.payload,
         fillType: FillType.SlowFill,
       },
     };

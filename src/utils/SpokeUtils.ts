@@ -23,8 +23,8 @@ export function populateV3Relay(
   repaymentChainId = deposit.destinationChainId
 ): Promise<PopulatedTransaction> {
   const v3RelayData: RelayData = {
-    depositor: deposit.depositor,
-    recipient: deposit.recipient,
+    intentOwner: deposit.intentOwner,
+    intentReceiver: deposit.intentReceiver,
     exclusiveRelayer: deposit.exclusiveRelayer,
     inputToken: deposit.inputToken,
     outputToken: deposit.outputToken,
@@ -34,7 +34,7 @@ export function populateV3Relay(
     nonce: deposit.nonce,
     fillDeadline: deposit.fillDeadline,
     exclusivityDeadline: deposit.exclusivityDeadline,
-    message: deposit.message,
+    payload: deposit.payload,
   };
   if (isDefined(deposit.speedUpSignature)) {
     assert(isDefined(deposit.updatedRecipient) && deposit.updatedRecipient !== ZERO_ADDRESS);
@@ -222,18 +222,18 @@ export function getRelayDataHash(relayData: RelayData, destinationChainId: numbe
     ethersUtils.defaultAbiCoder.encode(
       [
         "tuple(" +
-          "address depositor," +
-          "address recipient," +
-          "address exclusiveRelayer," +
+          "address intentOwner," +
+          "address intentReceiver," +
           "address inputToken," +
           "address outputToken," +
           "uint256 inputAmount," +
           "uint256 outputAmount," +
           "uint256 originChainId," +
+          "address exclusiveRelayer," +
           "uint32 nonce," +
           "uint32 fillDeadline," +
           "uint32 exclusivityDeadline," +
-          "bytes message" +
+          "bytes payload" +
           ")",
         "uint256 destinationChainId",
       ],
@@ -261,15 +261,10 @@ export async function relayFillStatus(
 ): Promise<FillStatus> {
   destinationChainId ??= (await spokePool.provider.getNetwork()).chainId;
   const hash = getRelayDataHash(relayData, destinationChainId!);
-  const _fillStatus = await spokePool.fillStatuses(hash, { blockTag });
-  const fillStatus = Number(_fillStatus);
+  const _fillStatus = await spokePool.intentFilled(hash, { blockTag });
+  const fillStatus = Boolean(_fillStatus);
 
-  if (![FillStatus.Unfilled, FillStatus.RequestedSlowFill, FillStatus.Filled].includes(fillStatus)) {
-    const { originChainId, nonce } = relayData;
-    throw new Error(`relayFillStatus: Unexpected fillStatus for ${originChainId} deposit ${nonce} (${fillStatus})`);
-  }
-
-  return fillStatus;
+  return fillStatus ? FillStatus.Filled : FillStatus.Unfilled;
 }
 
 export async function fillStatusArray(

@@ -7,18 +7,18 @@ import { RelayerRefundLeaf } from "./HubPool";
 export type { FilledV3RelayEvent, V3FundsDepositedEvent };
 
 export interface RelayData {
-  originChainId: number;
-  depositor: string;
-  recipient: string;
-  nonce: number;
+  intentOwner: string,
+  intentReceiver: string, 
   inputToken: string;
-  inputAmount: BigNumber;
   outputToken: string;
+  inputAmount: BigNumber;
   outputAmount: BigNumber;
-  message: string;
-  fillDeadline: number;
+  originChainId: number;
   exclusiveRelayer: string;
+  nonce: number;
+  fillDeadline: number;
   exclusivityDeadline: number;
+  payload: string;
 }
 
 export interface Deposit extends RelayData {

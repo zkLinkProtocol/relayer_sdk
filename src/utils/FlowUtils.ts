@@ -23,7 +23,7 @@ export const V3_DEPOSIT_COMPARISON_KEYS = [
 
 export function filledSameDeposit(fillA: Fill, fillB: Fill): boolean {
   // Don't bother hashing obvious mismatches.
-  if (fillA.nonce !== fillB.nonce && fillA.depositor !== fillB.depositor) {
+  if (fillA.nonce !== fillB.nonce && fillA.intentOwner !== fillB.intentOwner) {
     return false;
   }
 

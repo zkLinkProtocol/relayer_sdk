@@ -345,7 +345,26 @@ const _abi = [
     ],
     "name": "IntentFilled",
     "type": "event"
-  }
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "intentFilled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
 ];
 
 type SpokePoolConstructorParams =

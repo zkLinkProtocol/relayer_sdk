@@ -50,29 +50,11 @@ export async function queryHistoricalDepositForFill(
     throw new Error("SpokePoolClient must be updated before querying historical deposits");
   }
 
-  const { depositor, nonce } = fill;
-  // let { firstDepositIdForSpokePool: lowId, lastDepositIdForSpokePool: highId } = spokePoolClient;
-  // if (nonce < lowId || nonce > highId) {
-  //   return {
-  //     found: false,
-  //     code: InvalidFill.DepositIdInvalid,
-  //     reason: `Deposit ID ${nonce} is outside of SpokePool bounds [${lowId},${highId}].`,
-  //   };
-  // }
-
-  // ({ earliestDepositIdQueried: lowId, latestDepositIdQueried: highId } = spokePoolClient);
-  // if (nonce >= lowId && nonce <= highId) {
-    const new_deposit = spokePoolClient.getDeposit(depositor, nonce);
-    if (isDefined(new_deposit) && validateFillForDeposit(fill, new_deposit)) {
-      return { found: true, deposit: new_deposit };
-    }
-
-  //   return {
-  //     found: false,
-  //     code: isDefined(deposit) ? InvalidFill.FillMismatch : InvalidFill.DepositIdNotFound,
-  //     reason: `Deposit ID ${nonce} not found in SpokePoolClient event buffer.`,
-  //   };
-  // }
+  const { intentOwner, nonce } = fill;
+  const new_deposit = spokePoolClient.getDeposit(intentOwner, nonce);
+  if (isDefined(new_deposit) && validateFillForDeposit(fill, new_deposit)) {
+    return { found: true, deposit: new_deposit };
+  }
 
   let deposit: DepositWithBlock, cachedDeposit: Deposit | undefined;
   if (cache) {
@@ -97,7 +79,7 @@ export async function queryHistoricalDepositForFill(
   if (isDefined(cachedDeposit)) {
     deposit = cachedDeposit as DepositWithBlock;
   } else {
-    deposit = await spokePoolClient.findDeposit(fill.nonce, fill.destinationChainId, fill.depositor);
+    deposit = await spokePoolClient.findDeposit(fill.nonce, fill.destinationChainId, fill.intentOwner);
     if (cache) {
       await setDepositInCache(deposit, getCurrentTime(), cache, DEFAULT_CACHING_TTL);
     }
@@ -110,7 +92,7 @@ export async function queryHistoricalDepositForFill(
   return {
     found: false,
     code: InvalidFill.FillMismatch,
-    reason: `Fill is not valid for ${getNetworkName(deposit.originChainId)} depositor ${depositor} with nonce ${nonce}`,
+    reason: `Fill is not valid for ${getNetworkName(deposit.originChainId)} depositor ${intentOwner} with nonce ${nonce}`,
   };
 }
 
@@ -138,7 +120,7 @@ export function isDepositSpedUp(deposit: Deposit): boolean {
  * @returns Original or updated message string, depending on whether the depositor updated the deposit.
  */
 export function resolveDepositMessage(deposit: Deposit): string {
-  const message = isDepositSpedUp(deposit) ? deposit.updatedMessage : deposit.message;
+  const message = isDepositSpedUp(deposit) ? deposit.updatedMessage : deposit.payload;
   assert(isDefined(message)); // Appease tsc about the updatedMessage being possibly undefined.
   return message;
 }

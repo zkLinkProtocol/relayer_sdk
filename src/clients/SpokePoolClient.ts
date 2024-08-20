@@ -233,8 +233,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @returns A new deposit instance with the speed up signature appended to the deposit.
    */
   public appendMaxSpeedUpSignatureToDeposit(deposit: DepositWithBlock): DepositWithBlock {
-    const { nonce, depositor } = deposit;
-    const speedups = this.speedUps[depositor]?.[nonce];
+    const { nonce, intentOwner } = deposit;
+    const speedups = this.speedUps[intentOwner]?.[nonce];
     if (!isDefined(speedups) || speedups.length === 0) {
       return deposit;
     }
@@ -268,7 +268,7 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @returns The corresponding deposit if found, undefined otherwise.
    */
   public getDeposit(depositor: string, nonce: number): DepositWithBlock | undefined {
-    const depositHash = this.getDepositHash({ depositor, nonce, originChainId: this.chainId });
+    const depositHash = this.getDepositHash({ intentOwner: depositor, nonce, originChainId: this.chainId });
     return this.depositHashes[depositHash];
   }
 
@@ -335,7 +335,7 @@ export class SpokePoolClient extends BaseAbstractClient {
     );
 
     // Log any invalid deposits with same deposit id but different params.
-    const invalidFillsForDeposit = invalidFills.filter((x) => x.nonce === deposit.nonce && x.depositor === deposit.depositor);
+    const invalidFillsForDeposit = invalidFills.filter((x) => x.nonce === deposit.nonce && x.intentOwner === deposit.intentOwner);
     if (invalidFillsForDeposit.length > 0) {
       this.logger.warn({
         at: "SpokePoolClient",
@@ -366,8 +366,8 @@ export class SpokePoolClient extends BaseAbstractClient {
    * @note This hash is used to match deposits and fills together.
    * @note This hash takes the form of: `${depositId}-${originChainId}`.
    */
-  public getDepositHash(event: { depositor: string, nonce: number; originChainId: number }): string {
-    return `${event.depositor}-${event.nonce}-${event.originChainId}`;
+  public getDepositHash(event: { intentOwner: string, nonce: number; originChainId: number }): string {
+    return `${event.intentOwner}-${event.nonce}-${event.originChainId}`;
   }
 
   /**
