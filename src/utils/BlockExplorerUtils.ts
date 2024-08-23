@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { PUBLIC_NETWORKS } from "../constants";
-import { createShortHexString } from "./FormattingUtils";
 import { isDefined } from "./TypeGuards";
 
 /**
@@ -64,8 +63,6 @@ function _createBlockExplorerLinkMarkdown(hex: string, chainId = 1): string | nu
   if (!ethers.utils.isHexString(hex)) {
     return null;
   }
-  // Resolve the short URL string.
-  const shortURLString = createShortHexString(hex);
   // Iterate over the two possible hex lengths.
   for (const [length, route] of [
     [66, "tx"],
@@ -73,7 +70,7 @@ function _createBlockExplorerLinkMarkdown(hex: string, chainId = 1): string | nu
   ] as [number, string][]) {
     // If the hex string is the correct length, return the link.
     if (hex.length === length) {
-      return `<${constructURL(explorerDomain, [route, hex])}|${shortURLString}>`;
+      return `<${constructURL(explorerDomain, [route, hex])}>`;
     }
   }
   return null;

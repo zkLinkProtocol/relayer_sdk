@@ -1,8 +1,8 @@
 import { CHAIN_IDs, MAINNET_CHAIN_IDs, PUBLIC_NETWORKS, TESTNET_CHAIN_IDs } from "../constants";
 
 const hreNetworks: Record<number, string> = {
-  666: "Hardhat1",
-  1337: "Hardhat2",
+  810180: "zkLink Nova Mainnet",
+  810181: "zkLink Nova Sepolia Testnet",
 };
 
 /**
